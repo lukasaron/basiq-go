@@ -93,37 +93,37 @@ type IncomeSummary struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) IncomeSummary(ctx context.Context, userID, snapshotID string) (IncomeSummary, error) {
-	incomeSummary, err := c.incomeSummary(ctx, userID, snapshotID)
+func (a *API) IncomeSummary(ctx context.Context, userID, snapshotID string) (IncomeSummary, error) {
+	incomeSummary, err := a.incomeSummary(ctx, userID, snapshotID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return incomeSummary, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return IncomeSummary{}, err
 	}
-	return c.incomeSummary(ctx, userID, snapshotID)
+	return a.incomeSummary(ctx, userID, snapshotID)
 }
 
-func (c *Client) CreateIncomeSummary(ctx context.Context, userID string, params IncomeSummaryParams) (IncomeSummary, error) {
-	incomeSummary, err := c.createIncomeSummary(ctx, userID, params)
+func (a *API) CreateIncomeSummary(ctx context.Context, userID string, params IncomeSummaryParams) (IncomeSummary, error) {
+	incomeSummary, err := a.createIncomeSummary(ctx, userID, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return incomeSummary, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return IncomeSummary{}, err
 	}
-	return c.createIncomeSummary(ctx, userID, params)
+	return a.createIncomeSummary(ctx, userID, params)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) incomeSummary(ctx context.Context, userID, snapshot string) (IncomeSummary, error) {
+func (a *API) incomeSummary(ctx context.Context, userID, snapshot string) (IncomeSummary, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "income", snapshot)
 	if err != nil {
 		return IncomeSummary{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return IncomeSummary{}, err
 	}
@@ -132,7 +132,7 @@ func (c *Client) incomeSummary(ctx context.Context, userID, snapshot string) (In
 	return summary, json.Unmarshal(data, &summary)
 }
 
-func (c *Client) createIncomeSummary(ctx context.Context, userID string, params IncomeSummaryParams) (IncomeSummary, error) {
+func (a *API) createIncomeSummary(ctx context.Context, userID string, params IncomeSummaryParams) (IncomeSummary, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "income")
 	if err != nil {
 		return IncomeSummary{}, err
@@ -143,7 +143,7 @@ func (c *Client) createIncomeSummary(ctx context.Context, userID string, params 
 		return IncomeSummary{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return IncomeSummary{}, err
 	}

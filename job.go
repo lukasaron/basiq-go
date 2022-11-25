@@ -28,26 +28,26 @@ type Job struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Job(ctx context.Context, jobID string) (Job, error) {
-	job, err := c.job(ctx, jobID)
+func (a *API) Job(ctx context.Context, jobID string) (Job, error) {
+	job, err := a.job(ctx, jobID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return job, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Job{}, err
 	}
-	return c.job(ctx, jobID)
+	return a.job(ctx, jobID)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) job(ctx context.Context, jobID string) (Job, error) {
+func (a *API) job(ctx context.Context, jobID string) (Job, error) {
 	callURl, err := url.JoinPath(baseURL, "jobs", jobID)
 	if err != nil {
 		return Job{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURl, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURl, nil)
 	if err != nil {
 		return Job{}, err
 	}

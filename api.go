@@ -44,10 +44,10 @@ func (c Config) Validate() error {
 	}
 }
 
-// Client is the center logic of the basiq ecosystem. You should crate new instance of the client via calling
-// the NewClient method where all setup and validation of input happens.
-// Client is thread safe struct.
-type Client struct {
+// API is the center logic of the basiq ecosystem. You should crate new instance of the client via calling
+// the NewAPI method where all setup and validation of input happens.
+// API is thread safe struct.
+type API struct {
 	apiKey       string
 	scope        AuthScope
 	userID       string
@@ -56,13 +56,13 @@ type Client struct {
 	m            sync.Mutex
 }
 
-// NewClient instantiates the Client struct and checks all input parameters.
-func NewClient(config Config) (*Client, error) {
+// NewAPI instantiates the Client struct and checks all input parameters.
+func NewAPI(config Config) (*API, error) {
 	if err := config.Validate(); err != nil {
 		return nil, err
 	}
 
-	return &Client{
+	return &API{
 		apiKey:  config.APIKey,
 		scope:   config.Scope,
 		userID:  config.UserID,
@@ -73,12 +73,12 @@ func NewClient(config Config) (*Client, error) {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) makeCall(ctx context.Context, HTTPMethod, callURL string, payload io.Reader) ([]byte, error) {
+func (a *API) makeCall(ctx context.Context, HTTPMethod, callURL string, payload io.Reader) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, HTTPMethod, callURL, payload)
 	if err != nil {
 		return nil, err
 	}
-	req.Header = c.headers
+	req.Header = a.headers
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {

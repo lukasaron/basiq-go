@@ -31,37 +31,37 @@ type FloatAccount struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) FloatAccount(ctx context.Context, floatAccountID string) (FloatAccount, error) {
-	floatAccount, err := c.floatAccount(ctx, floatAccountID)
+func (a *API) FloatAccount(ctx context.Context, floatAccountID string) (FloatAccount, error) {
+	floatAccount, err := a.floatAccount(ctx, floatAccountID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return floatAccount, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return FloatAccount{}, err
 	}
-	return c.floatAccount(ctx, floatAccountID)
+	return a.floatAccount(ctx, floatAccountID)
 }
 
-func (c *Client) FloatAccounts(ctx context.Context) (FloatAccountList, error) {
-	floatAccountList, err := c.floatAccounts(ctx)
+func (a *API) FloatAccounts(ctx context.Context) (FloatAccountList, error) {
+	floatAccountList, err := a.floatAccounts(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return floatAccountList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return FloatAccountList{}, err
 	}
-	return c.floatAccounts(ctx)
+	return a.floatAccounts(ctx)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) floatAccount(ctx context.Context, floatAccountID string) (FloatAccount, error) {
+func (a *API) floatAccount(ctx context.Context, floatAccountID string) (FloatAccount, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "float-accounts", floatAccountID)
 	if err != nil {
 		return FloatAccount{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return FloatAccount{}, err
 	}
@@ -70,13 +70,13 @@ func (c *Client) floatAccount(ctx context.Context, floatAccountID string) (Float
 	return floatAccount, json.Unmarshal(data, &floatAccount)
 }
 
-func (c *Client) floatAccounts(ctx context.Context) (FloatAccountList, error) {
+func (a *API) floatAccounts(ctx context.Context) (FloatAccountList, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "float-accounts")
 	if err != nil {
 		return FloatAccountList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return FloatAccountList{}, err
 	}

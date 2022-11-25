@@ -22,20 +22,20 @@ type MFA struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) CreateMFAResponse(ctx context.Context, jobID string, params MFAParams) (MFA, error) {
-	mfa, err := c.createMFA(ctx, jobID, params)
+func (a *API) CreateMFAResponse(ctx context.Context, jobID string, params MFAParams) (MFA, error) {
+	mfa, err := a.createMFA(ctx, jobID, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return mfa, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return MFA{}, err
 	}
-	return c.createMFA(ctx, jobID, params)
+	return a.createMFA(ctx, jobID, params)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) createMFA(ctx context.Context, jobID string, params MFAParams) (MFA, error) {
+func (a *API) createMFA(ctx context.Context, jobID string, params MFAParams) (MFA, error) {
 	callURL, err := url.JoinPath(baseURL, "jobs", jobID, "mfa")
 	if err != nil {
 		return MFA{}, err
@@ -46,7 +46,7 @@ func (c *Client) createMFA(ctx context.Context, jobID string, params MFAParams) 
 		return MFA{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return MFA{}, err
 	}

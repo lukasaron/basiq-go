@@ -77,48 +77,48 @@ type PayRequestJob struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) PayRequest(ctx context.Context, payRequestID string) (PayRequest, error) {
-	payRequest, err := c.payRequest(ctx, payRequestID)
+func (a *API) PayRequest(ctx context.Context, payRequestID string) (PayRequest, error) {
+	payRequest, err := a.payRequest(ctx, payRequestID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return payRequest, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return PayRequest{}, err
 	}
-	return c.payRequest(ctx, payRequestID)
+	return a.payRequest(ctx, payRequestID)
 }
 
-func (c *Client) PayRequests(ctx context.Context) (PayRequestList, error) {
-	payRequestList, err := c.payRequests(ctx)
+func (a *API) PayRequests(ctx context.Context) (PayRequestList, error) {
+	payRequestList, err := a.payRequests(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return payRequestList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return PayRequestList{}, err
 	}
-	return c.payRequests(ctx)
+	return a.payRequests(ctx)
 }
 
-func (c *Client) CreatePayRequest(ctx context.Context, params PayRequestParams) (PayRequestJobList, error) {
-	payRequestJobList, err := c.createPayRequest(ctx, params)
+func (a *API) CreatePayRequest(ctx context.Context, params PayRequestParams) (PayRequestJobList, error) {
+	payRequestJobList, err := a.createPayRequest(ctx, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return payRequestJobList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return PayRequestJobList{}, err
 	}
-	return c.createPayRequest(ctx, params)
+	return a.createPayRequest(ctx, params)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) payRequest(ctx context.Context, payRequestID string) (PayRequest, error) {
+func (a *API) payRequest(ctx context.Context, payRequestID string) (PayRequest, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "payrequests", payRequestID)
 	if err != nil {
 		return PayRequest{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return PayRequest{}, err
 	}
@@ -127,13 +127,13 @@ func (c *Client) payRequest(ctx context.Context, payRequestID string) (PayReques
 	return payRequest, json.Unmarshal(data, &payRequest)
 }
 
-func (c *Client) payRequests(ctx context.Context) (PayRequestList, error) {
+func (a *API) payRequests(ctx context.Context) (PayRequestList, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "payrequests")
 	if err != nil {
 		return PayRequestList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return PayRequestList{}, err
 	}
@@ -142,7 +142,7 @@ func (c *Client) payRequests(ctx context.Context) (PayRequestList, error) {
 	return list, json.Unmarshal(data, &list)
 }
 
-func (c *Client) createPayRequest(ctx context.Context, params PayRequestParams) (PayRequestJobList, error) {
+func (a *API) createPayRequest(ctx context.Context, params PayRequestParams) (PayRequestJobList, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "payrequests")
 	if err != nil {
 		return PayRequestJobList{}, err
@@ -153,7 +153,7 @@ func (c *Client) createPayRequest(ctx context.Context, params PayRequestParams) 
 		return PayRequestJobList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return PayRequestJobList{}, err
 	}

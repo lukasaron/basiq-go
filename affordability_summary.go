@@ -32,26 +32,26 @@ type AffordabilitySummary struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) AffordabilitySummaries(ctx context.Context, userID string) (AffordabilitySummaryList, error) {
-	affordabilitySummaryList, err := c.affordabilitySummaries(ctx, userID)
+func (a *API) AffordabilitySummaries(ctx context.Context, userID string) (AffordabilitySummaryList, error) {
+	affordabilitySummaryList, err := a.affordabilitySummaries(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return affordabilitySummaryList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return AffordabilitySummaryList{}, err
 	}
-	return c.affordabilitySummaries(ctx, userID)
+	return a.affordabilitySummaries(ctx, userID)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) affordabilitySummaries(ctx context.Context, userID string) (AffordabilitySummaryList, error) {
+func (a *API) affordabilitySummaries(ctx context.Context, userID string) (AffordabilitySummaryList, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "affordability")
 	if err != nil {
 		return AffordabilitySummaryList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return AffordabilitySummaryList{}, err
 	}

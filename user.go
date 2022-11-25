@@ -55,59 +55,59 @@ type UserParams struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) User(ctx context.Context, userID string) (User, error) {
-	user, err := c.user(ctx, userID)
+func (a *API) User(ctx context.Context, userID string) (User, error) {
+	user, err := a.user(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return user, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return User{}, err
 	}
-	return c.user(ctx, userID)
+	return a.user(ctx, userID)
 }
 
-func (c *Client) CreateUser(ctx context.Context, params UserParams) (User, error) {
-	user, err := c.createUser(ctx, params)
+func (a *API) CreateUser(ctx context.Context, params UserParams) (User, error) {
+	user, err := a.createUser(ctx, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return user, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return User{}, err
 	}
-	return c.createUser(ctx, params)
+	return a.createUser(ctx, params)
 }
 
-func (c *Client) UpdateUser(ctx context.Context, userID string, params UserParams) (User, error) {
-	user, err := c.updateUser(ctx, userID, params)
+func (a *API) UpdateUser(ctx context.Context, userID string, params UserParams) (User, error) {
+	user, err := a.updateUser(ctx, userID, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return user, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return User{}, err
 	}
-	return c.updateUser(ctx, userID, params)
+	return a.updateUser(ctx, userID, params)
 }
 
-func (c *Client) DeleteUser(ctx context.Context, userID string) error {
-	err := c.deleteUser(ctx, userID)
+func (a *API) DeleteUser(ctx context.Context, userID string) error {
+	err := a.deleteUser(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return err
 	}
-	return c.deleteUser(ctx, userID)
+	return a.deleteUser(ctx, userID)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) user(ctx context.Context, userID string) (User, error) {
+func (a *API) user(ctx context.Context, userID string) (User, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID)
 	if err != nil {
 		return User{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return User{}, err
 	}
@@ -116,7 +116,7 @@ func (c *Client) user(ctx context.Context, userID string) (User, error) {
 	return user, json.Unmarshal(data, &user)
 }
 
-func (c *Client) createUser(ctx context.Context, params UserParams) (User, error) {
+func (a *API) createUser(ctx context.Context, params UserParams) (User, error) {
 	callURL, err := url.JoinPath(baseURL, "users")
 	if err != nil {
 		return User{}, err
@@ -127,7 +127,7 @@ func (c *Client) createUser(ctx context.Context, params UserParams) (User, error
 		return User{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return User{}, err
 	}
@@ -136,7 +136,7 @@ func (c *Client) createUser(ctx context.Context, params UserParams) (User, error
 	return user, json.Unmarshal(data, &user)
 }
 
-func (c *Client) updateUser(ctx context.Context, userID string, params UserParams) (User, error) {
+func (a *API) updateUser(ctx context.Context, userID string, params UserParams) (User, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID)
 	if err != nil {
 		return User{}, err
@@ -147,7 +147,7 @@ func (c *Client) updateUser(ctx context.Context, userID string, params UserParam
 		return User{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return User{}, err
 	}
@@ -156,12 +156,12 @@ func (c *Client) updateUser(ctx context.Context, userID string, params UserParam
 	return user, json.Unmarshal(data, &user)
 }
 
-func (c *Client) deleteUser(ctx context.Context, userID string) error {
+func (a *API) deleteUser(ctx context.Context, userID string) error {
 	callURL, err := url.JoinPath(baseURL, "users", userID)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.makeCall(ctx, http.MethodDelete, callURL, nil)
+	_, err = a.makeCall(ctx, http.MethodDelete, callURL, nil)
 	return err
 }

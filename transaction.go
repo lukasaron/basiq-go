@@ -88,37 +88,37 @@ type Transaction struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Transaction(ctx context.Context, userID, transactionID string) (Transaction, error) {
-	transaction, err := c.transaction(ctx, userID, transactionID)
+func (a *API) Transaction(ctx context.Context, userID, transactionID string) (Transaction, error) {
+	transaction, err := a.transaction(ctx, userID, transactionID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return transaction, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Transaction{}, err
 	}
-	return c.transaction(ctx, userID, transactionID)
+	return a.transaction(ctx, userID, transactionID)
 }
 
-func (c *Client) Transactions(ctx context.Context, userID string) (TransactionList, error) {
-	transactionList, err := c.transactions(ctx, userID)
+func (a *API) Transactions(ctx context.Context, userID string) (TransactionList, error) {
+	transactionList, err := a.transactions(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return transactionList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return TransactionList{}, err
 	}
-	return c.transactions(ctx, userID)
+	return a.transactions(ctx, userID)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) transaction(ctx context.Context, userID, transactionID string) (Transaction, error) {
+func (a *API) transaction(ctx context.Context, userID, transactionID string) (Transaction, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "transactions", transactionID)
 	if err != nil {
 		return Transaction{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return Transaction{}, err
 	}
@@ -127,13 +127,13 @@ func (c *Client) transaction(ctx context.Context, userID, transactionID string) 
 	return transaction, json.Unmarshal(data, &transaction)
 }
 
-func (c *Client) transactions(ctx context.Context, userID string) (TransactionList, error) {
+func (a *API) transactions(ctx context.Context, userID string) (TransactionList, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "transactions")
 	if err != nil {
 		return TransactionList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return TransactionList{}, err
 	}

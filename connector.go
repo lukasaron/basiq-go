@@ -67,37 +67,37 @@ type Connector struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Connector(ctx context.Context, connectorID, method string) (Connector, error) {
-	connector, err := c.connector(ctx, connectorID, method)
+func (a *API) Connector(ctx context.Context, connectorID, method string) (Connector, error) {
+	connector, err := a.connector(ctx, connectorID, method)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return connector, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Connector{}, err
 	}
-	return c.connector(ctx, connectorID, method)
+	return a.connector(ctx, connectorID, method)
 }
 
-func (c *Client) Connectors(ctx context.Context) (ConnectorList, error) {
-	connectorList, err := c.connectors(ctx)
+func (a *API) Connectors(ctx context.Context) (ConnectorList, error) {
+	connectorList, err := a.connectors(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return connectorList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return ConnectorList{}, err
 	}
-	return c.connectors(ctx)
+	return a.connectors(ctx)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) connector(ctx context.Context, connectorID, method string) (Connector, error) {
+func (a *API) connector(ctx context.Context, connectorID, method string) (Connector, error) {
 	callURL, err := url.JoinPath(baseURL, "connectors", connectorID, method)
 	if err != nil {
 		return Connector{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return Connector{}, err
 	}
@@ -106,13 +106,13 @@ func (c *Client) connector(ctx context.Context, connectorID, method string) (Con
 	return connector, json.Unmarshal(data, &connector)
 }
 
-func (c *Client) connectors(ctx context.Context) (ConnectorList, error) {
+func (a *API) connectors(ctx context.Context) (ConnectorList, error) {
 	callURL, err := url.JoinPath(baseURL, "connectors")
 	if err != nil {
 		return ConnectorList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return ConnectorList{}, err
 	}

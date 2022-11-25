@@ -47,37 +47,37 @@ type UserConsent struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) UserConsent(ctx context.Context, userID string) (UserConsent, error) {
-	userConsent, err := c.userConsent(ctx, userID)
+func (a *API) UserConsent(ctx context.Context, userID string) (UserConsent, error) {
+	userConsent, err := a.userConsent(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return userConsent, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return UserConsent{}, err
 	}
-	return c.userConsent(ctx, userID)
+	return a.userConsent(ctx, userID)
 }
 
-func (c *Client) DeleteUserConsent(ctx context.Context, userID, consentID string) error {
-	err := c.deleteUserConsent(ctx, userID, consentID)
+func (a *API) DeleteUserConsent(ctx context.Context, userID, consentID string) error {
+	err := a.deleteUserConsent(ctx, userID, consentID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return err
 	}
-	return c.deleteUserConsent(ctx, userID, consentID)
+	return a.deleteUserConsent(ctx, userID, consentID)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) userConsent(ctx context.Context, userID string) (UserConsent, error) {
+func (a *API) userConsent(ctx context.Context, userID string) (UserConsent, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "consents")
 	if err != nil {
 		return UserConsent{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return UserConsent{}, err
 	}
@@ -86,12 +86,12 @@ func (c *Client) userConsent(ctx context.Context, userID string) (UserConsent, e
 	return consent, json.Unmarshal(data, &consent)
 }
 
-func (c *Client) deleteUserConsent(ctx context.Context, userID, consentID string) error {
+func (a *API) deleteUserConsent(ctx context.Context, userID, consentID string) error {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "consents", consentID)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.makeCall(ctx, http.MethodDelete, callURL, nil)
+	_, err = a.makeCall(ctx, http.MethodDelete, callURL, nil)
 	return err
 }

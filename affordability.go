@@ -124,37 +124,37 @@ type Affordability struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Affordability(ctx context.Context, userID, snapshotID string) (Affordability, error) {
-	affordability, err := c.affordability(ctx, userID, snapshotID)
+func (a *API) Affordability(ctx context.Context, userID, snapshotID string) (Affordability, error) {
+	affordability, err := a.affordability(ctx, userID, snapshotID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return affordability, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Affordability{}, err
 	}
-	return c.affordability(ctx, userID, snapshotID)
+	return a.affordability(ctx, userID, snapshotID)
 }
 
-func (c *Client) CreateAffordability(ctx context.Context, userID string, params AffordabilityParams) (Affordability, error) {
-	affordability, err := c.createAffordability(ctx, userID, params)
+func (a *API) CreateAffordability(ctx context.Context, userID string, params AffordabilityParams) (Affordability, error) {
+	affordability, err := a.createAffordability(ctx, userID, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return affordability, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Affordability{}, err
 	}
-	return c.createAffordability(ctx, userID, params)
+	return a.createAffordability(ctx, userID, params)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) affordability(ctx context.Context, userID, snapshotID string) (Affordability, error) {
+func (a *API) affordability(ctx context.Context, userID, snapshotID string) (Affordability, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "affordability", snapshotID)
 	if err != nil {
 		return Affordability{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return Affordability{}, err
 	}
@@ -163,7 +163,7 @@ func (c *Client) affordability(ctx context.Context, userID, snapshotID string) (
 	return affordability, json.Unmarshal(data, &affordability)
 }
 
-func (c *Client) createAffordability(ctx context.Context, userID string, params AffordabilityParams) (Affordability, error) {
+func (a *API) createAffordability(ctx context.Context, userID string, params AffordabilityParams) (Affordability, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "affordability")
 	if err != nil {
 		return Affordability{}, err
@@ -174,7 +174,7 @@ func (c *Client) createAffordability(ctx context.Context, userID string, params 
 		return Affordability{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return Affordability{}, err
 	}

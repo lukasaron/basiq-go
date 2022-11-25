@@ -26,48 +26,48 @@ type AuthLink struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) AuthLink(ctx context.Context, userID string) (AuthLink, error) {
-	authLink, err := c.authLink(ctx, userID)
+func (a *API) AuthLink(ctx context.Context, userID string) (AuthLink, error) {
+	authLink, err := a.authLink(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return authLink, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return AuthLink{}, err
 	}
-	return c.authLink(ctx, userID)
+	return a.authLink(ctx, userID)
 }
 
-func (c *Client) CreateAuthLink(ctx context.Context, userID string, params AuthLinkParams) (AuthLink, error) {
-	authLink, err := c.createAuthLink(ctx, userID, params)
+func (a *API) CreateAuthLink(ctx context.Context, userID string, params AuthLinkParams) (AuthLink, error) {
+	authLink, err := a.createAuthLink(ctx, userID, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return authLink, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return AuthLink{}, err
 	}
-	return c.createAuthLink(ctx, userID, params)
+	return a.createAuthLink(ctx, userID, params)
 }
 
-func (c *Client) DeleteAuthLink(ctx context.Context, userID string) error {
-	err := c.deleteAuthLink(ctx, userID)
+func (a *API) DeleteAuthLink(ctx context.Context, userID string) error {
+	err := a.deleteAuthLink(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return err
 	}
-	return c.deleteAuthLink(ctx, userID)
+	return a.deleteAuthLink(ctx, userID)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) authLink(ctx context.Context, userID string) (AuthLink, error) {
+func (a *API) authLink(ctx context.Context, userID string) (AuthLink, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "auth_link")
 	if err != nil {
 		return AuthLink{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return AuthLink{}, err
 	}
@@ -76,7 +76,7 @@ func (c *Client) authLink(ctx context.Context, userID string) (AuthLink, error) 
 	return link, json.Unmarshal(data, &link)
 }
 
-func (c *Client) createAuthLink(ctx context.Context, userID string, params AuthLinkParams) (AuthLink, error) {
+func (a *API) createAuthLink(ctx context.Context, userID string, params AuthLinkParams) (AuthLink, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "auth_link")
 	if err != nil {
 		return AuthLink{}, err
@@ -87,7 +87,7 @@ func (c *Client) createAuthLink(ctx context.Context, userID string, params AuthL
 		return AuthLink{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return AuthLink{}, err
 	}
@@ -96,12 +96,12 @@ func (c *Client) createAuthLink(ctx context.Context, userID string, params AuthL
 	return link, json.Unmarshal(data, &link)
 }
 
-func (c *Client) deleteAuthLink(ctx context.Context, userID string) error {
+func (a *API) deleteAuthLink(ctx context.Context, userID string) error {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "auth_link")
 	if err != nil {
 		return err
 	}
 
-	_, err = c.makeCall(ctx, http.MethodDelete, callURL, nil)
+	_, err = a.makeCall(ctx, http.MethodDelete, callURL, nil)
 	return err
 }

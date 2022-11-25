@@ -64,37 +64,37 @@ type Identity struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Identity(ctx context.Context, userID, identityID string) (Identity, error) {
-	identity, err := c.identity(ctx, userID, identityID)
+func (a *API) Identity(ctx context.Context, userID, identityID string) (Identity, error) {
+	identity, err := a.identity(ctx, userID, identityID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return identity, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Identity{}, err
 	}
-	return c.identity(ctx, userID, identityID)
+	return a.identity(ctx, userID, identityID)
 }
 
-func (c *Client) Identities(ctx context.Context, userID string) (IdentityList, error) {
-	identityList, err := c.identities(ctx, userID)
+func (a *API) Identities(ctx context.Context, userID string) (IdentityList, error) {
+	identityList, err := a.identities(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return identityList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return IdentityList{}, err
 	}
-	return c.identities(ctx, userID)
+	return a.identities(ctx, userID)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) identity(ctx context.Context, userID, identityID string) (Identity, error) {
+func (a *API) identity(ctx context.Context, userID, identityID string) (Identity, error) {
 	callURl, err := url.JoinPath(baseURL, "users", userID, "identities", identityID)
 	if err != nil {
 		return Identity{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURl, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURl, nil)
 	if err != nil {
 		return Identity{}, err
 	}
@@ -103,13 +103,13 @@ func (c *Client) identity(ctx context.Context, userID, identityID string) (Ident
 	return identity, json.Unmarshal(data, &identity)
 }
 
-func (c *Client) identities(ctx context.Context, userID string) (IdentityList, error) {
+func (a *API) identities(ctx context.Context, userID string) (IdentityList, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "identities")
 	if err != nil {
 		return IdentityList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return IdentityList{}, err
 	}

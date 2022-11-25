@@ -45,37 +45,37 @@ type Account struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Account(ctx context.Context, userID, accountID string) (Account, error) {
-	account, err := c.account(ctx, userID, accountID)
+func (a *API) Account(ctx context.Context, userID, accountID string) (Account, error) {
+	account, err := a.account(ctx, userID, accountID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return account, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Account{}, err
 	}
-	return c.account(ctx, userID, accountID)
+	return a.account(ctx, userID, accountID)
 }
 
-func (c *Client) Accounts(ctx context.Context, userID string) (AccountList, error) {
-	accountList, err := c.accounts(ctx, userID)
+func (a *API) Accounts(ctx context.Context, userID string) (AccountList, error) {
+	accountList, err := a.accounts(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return accountList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return AccountList{}, err
 	}
-	return c.accounts(ctx, userID)
+	return a.accounts(ctx, userID)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) account(ctx context.Context, userID, accountID string) (Account, error) {
+func (a *API) account(ctx context.Context, userID, accountID string) (Account, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "accounts", accountID)
 	if err != nil {
 		return Account{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return Account{}, err
 	}
@@ -84,13 +84,13 @@ func (c *Client) account(ctx context.Context, userID, accountID string) (Account
 	return account, json.Unmarshal(data, &account)
 }
 
-func (c *Client) accounts(ctx context.Context, userID string) (AccountList, error) {
+func (a *API) accounts(ctx context.Context, userID string) (AccountList, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "accounts")
 	if err != nil {
 		return AccountList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return AccountList{}, err
 	}

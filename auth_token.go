@@ -25,37 +25,37 @@ type AuthToken struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Authenticate(ctx context.Context) error {
-	c.m.Lock()
-	defer c.m.Unlock()
+func (a *API) Authenticate(ctx context.Context) error {
+	a.m.Lock()
+	defer a.m.Unlock()
 
 	// when multiple threads want's to get a token the mutex allows only one enter into the section and
 	// this checks whether the last updated happen within a pause timeframe. If yes the token has been already refreshed
 	// otherwise refresh the token.
-	if c.authorizedAt.Sub(time.Now()).Abs().Seconds() < defaultAuthPauseSec {
+	if a.authorizedAt.Sub(time.Now()).Abs().Seconds() < defaultAuthPauseSec {
 		return nil
 	}
 
-	authToken, err := c.authToken(ctx, c.apiKey, c.scope, c.userID)
+	authToken, err := a.authToken(ctx, a.apiKey, a.scope, a.userID)
 	if err != nil {
 		return err
 	}
 
-	c.headers.Set("Authorization", fmt.Sprintf("Bearer %s", authToken.AccessToken))
-	c.authorizedAt = time.Now()
+	a.headers.Set("Authorization", fmt.Sprintf("Bearer %s", authToken.AccessToken))
+	a.authorizedAt = time.Now()
 
 	return nil
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) authToken(ctx context.Context, apiKey string, scope AuthScope, userID string) (AuthToken, error) {
+func (a *API) authToken(ctx context.Context, apiKey string, scope AuthScope, userID string) (AuthToken, error) {
 	callURL, err := url.JoinPath(baseURL, "token")
 	if err != nil {
 		return AuthToken{}, err
 	}
 
-	c.headers.Set("Authorization", fmt.Sprintf("Basic %s", apiKey))
+	a.headers.Set("Authorization", fmt.Sprintf("Basic %s", apiKey))
 
 	urlValues := url.Values{
 		"scope": {string(scope)},
@@ -64,7 +64,7 @@ func (c *Client) authToken(ctx context.Context, apiKey string, scope AuthScope, 
 		urlValues.Set("userId", userID)
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, strings.NewReader(urlValues.Encode()))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, strings.NewReader(urlValues.Encode()))
 	if err != nil {
 		return AuthToken{}, err
 	}

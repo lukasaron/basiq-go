@@ -88,37 +88,37 @@ type ExpenseSummary struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) ExpenseSummary(ctx context.Context, userID, snapshotID string) (ExpenseSummary, error) {
-	expenseSummary, err := c.expenseSummary(ctx, userID, snapshotID)
+func (a *API) ExpenseSummary(ctx context.Context, userID, snapshotID string) (ExpenseSummary, error) {
+	expenseSummary, err := a.expenseSummary(ctx, userID, snapshotID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return expenseSummary, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return ExpenseSummary{}, err
 	}
-	return c.expenseSummary(ctx, userID, snapshotID)
+	return a.expenseSummary(ctx, userID, snapshotID)
 }
 
-func (c *Client) CreateExpenseSummary(ctx context.Context, userID string, params ExpenseSummaryParams) (ExpenseSummary, error) {
-	expenseSummary, err := c.createExpenseSummary(ctx, userID, params)
+func (a *API) CreateExpenseSummary(ctx context.Context, userID string, params ExpenseSummaryParams) (ExpenseSummary, error) {
+	expenseSummary, err := a.createExpenseSummary(ctx, userID, params)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return expenseSummary, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return ExpenseSummary{}, err
 	}
-	return c.createExpenseSummary(ctx, userID, params)
+	return a.createExpenseSummary(ctx, userID, params)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) expenseSummary(ctx context.Context, userID, snapshotID string) (ExpenseSummary, error) {
+func (a *API) expenseSummary(ctx context.Context, userID, snapshotID string) (ExpenseSummary, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "expenses", snapshotID)
 	if err != nil {
 		return ExpenseSummary{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return ExpenseSummary{}, err
 	}
@@ -127,7 +127,7 @@ func (c *Client) expenseSummary(ctx context.Context, userID, snapshotID string) 
 	return summary, json.Unmarshal(data, &summary)
 }
 
-func (c *Client) createExpenseSummary(ctx context.Context, userID string, params ExpenseSummaryParams) (ExpenseSummary, error) {
+func (a *API) createExpenseSummary(ctx context.Context, userID string, params ExpenseSummaryParams) (ExpenseSummary, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "expenses")
 	if err != nil {
 		return ExpenseSummary{}, err
@@ -138,7 +138,7 @@ func (c *Client) createExpenseSummary(ctx context.Context, userID string, params
 		return ExpenseSummary{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
 		return ExpenseSummary{}, err
 	}

@@ -39,26 +39,26 @@ type AffordabilityTransaction struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) AffordabilityTransactions(ctx context.Context, userID, snapshotID string) (AffordabilityTransactionList, error) {
-	affordabilityTransactionList, err := c.affordabilityTransactions(ctx, userID, snapshotID)
+func (a *API) AffordabilityTransactions(ctx context.Context, userID, snapshotID string) (AffordabilityTransactionList, error) {
+	affordabilityTransactionList, err := a.affordabilityTransactions(ctx, userID, snapshotID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return affordabilityTransactionList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return AffordabilityTransactionList{}, err
 	}
-	return c.affordabilityTransactions(ctx, userID, snapshotID)
+	return a.affordabilityTransactions(ctx, userID, snapshotID)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) affordabilityTransactions(ctx context.Context, userID, snapshotID string) (AffordabilityTransactionList, error) {
+func (a *API) affordabilityTransactions(ctx context.Context, userID, snapshotID string) (AffordabilityTransactionList, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "affordability", snapshotID, "transactions")
 	if err != nil {
 		return AffordabilityTransactionList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return AffordabilityTransactionList{}, err
 	}

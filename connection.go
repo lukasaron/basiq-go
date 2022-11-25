@@ -80,70 +80,70 @@ type Connection struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) Connection(ctx context.Context, userID, connectionID string) (Connection, error) {
-	connection, err := c.connection(ctx, userID, connectionID)
+func (a *API) Connection(ctx context.Context, userID, connectionID string) (Connection, error) {
+	connection, err := a.connection(ctx, userID, connectionID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return connection, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Connection{}, err
 	}
-	return c.connection(ctx, userID, connectionID)
+	return a.connection(ctx, userID, connectionID)
 }
 
-func (c *Client) Connections(ctx context.Context, userID string) (ConnectionList, error) {
-	connectionList, err := c.connections(ctx, userID)
+func (a *API) Connections(ctx context.Context, userID string) (ConnectionList, error) {
+	connectionList, err := a.connections(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return connectionList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return ConnectionList{}, err
 	}
-	return c.connections(ctx, userID)
+	return a.connections(ctx, userID)
 }
 
-func (c *Client) RefreshConnection(ctx context.Context, userID, connectionID string) (Connection, error) {
-	connection, err := c.refreshConnection(ctx, userID, connectionID)
+func (a *API) RefreshConnection(ctx context.Context, userID, connectionID string) (Connection, error) {
+	connection, err := a.refreshConnection(ctx, userID, connectionID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return connection, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return Connection{}, err
 	}
-	return c.refreshConnection(ctx, userID, connectionID)
+	return a.refreshConnection(ctx, userID, connectionID)
 }
 
-func (c *Client) RefreshConnections(ctx context.Context, userID string) (ConnectionList, error) {
-	connectionList, err := c.refreshConnections(ctx, userID)
+func (a *API) RefreshConnections(ctx context.Context, userID string) (ConnectionList, error) {
+	connectionList, err := a.refreshConnections(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return connectionList, err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return ConnectionList{}, err
 	}
-	return c.refreshConnections(ctx, userID)
+	return a.refreshConnections(ctx, userID)
 }
 
-func (c *Client) DeleteConnection(ctx context.Context, userID, connectionID string) error {
-	err := c.deleteConnection(ctx, userID, connectionID)
+func (a *API) DeleteConnection(ctx context.Context, userID, connectionID string) error {
+	err := a.deleteConnection(ctx, userID, connectionID)
 	if err != nil && !IsUnauthorizedErr(err) {
 		return err
 	}
-	if err = c.Authenticate(ctx); err != nil {
+	if err = a.Authenticate(ctx); err != nil {
 		return err
 	}
-	return c.deleteConnection(ctx, userID, connectionID)
+	return a.deleteConnection(ctx, userID, connectionID)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (c *Client) connection(ctx context.Context, userID, connectionID string) (Connection, error) {
+func (a *API) connection(ctx context.Context, userID, connectionID string) (Connection, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "connections", connectionID)
 	if err != nil {
 		return Connection{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return Connection{}, err
 	}
@@ -152,13 +152,13 @@ func (c *Client) connection(ctx context.Context, userID, connectionID string) (C
 	return connection, json.Unmarshal(data, &connection)
 }
 
-func (c *Client) connections(ctx context.Context, userID string) (ConnectionList, error) {
+func (a *API) connections(ctx context.Context, userID string) (ConnectionList, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "connections")
 	if err != nil {
 		return ConnectionList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodGet, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
 		return ConnectionList{}, err
 	}
@@ -167,13 +167,13 @@ func (c *Client) connections(ctx context.Context, userID string) (ConnectionList
 	return list, json.Unmarshal(data, &list)
 }
 
-func (c *Client) refreshConnection(ctx context.Context, userID, connectionID string) (Connection, error) {
+func (a *API) refreshConnection(ctx context.Context, userID, connectionID string) (Connection, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "connections", connectionID, "refresh")
 	if err != nil {
 		return Connection{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, nil)
 	if err != nil {
 		return Connection{}, err
 	}
@@ -182,13 +182,13 @@ func (c *Client) refreshConnection(ctx context.Context, userID, connectionID str
 	return connection, json.Unmarshal(data, &connection)
 }
 
-func (c *Client) refreshConnections(ctx context.Context, userID string) (ConnectionList, error) {
+func (a *API) refreshConnections(ctx context.Context, userID string) (ConnectionList, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "connections", "refresh")
 	if err != nil {
 		return ConnectionList{}, err
 	}
 
-	data, err := c.makeCall(ctx, http.MethodPost, callURL, nil)
+	data, err := a.makeCall(ctx, http.MethodPost, callURL, nil)
 	if err != nil {
 		return ConnectionList{}, err
 	}
@@ -197,12 +197,12 @@ func (c *Client) refreshConnections(ctx context.Context, userID string) (Connect
 	return list, json.Unmarshal(data, &list)
 }
 
-func (c *Client) deleteConnection(ctx context.Context, userID, connectionID string) error {
+func (a *API) deleteConnection(ctx context.Context, userID, connectionID string) error {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "connections", connectionID)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.makeCall(ctx, http.MethodDelete, callURL, nil)
+	_, err = a.makeCall(ctx, http.MethodDelete, callURL, nil)
 	return err
 }
