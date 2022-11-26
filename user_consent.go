@@ -7,12 +7,6 @@ import (
 	"net/url"
 )
 
-type UserConsentList struct {
-	Type string        `json:"type"`
-	Size int           `json:"size"`
-	Data []UserConsent `json:"data"`
-}
-
 type UserConsent struct {
 	Type       string `json:"type"`
 	ID         string `json:"id"`

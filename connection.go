@@ -91,13 +91,13 @@ func (a *API) Connection(ctx context.Context, userID, connectionID string) (Conn
 	return a.connection(ctx, userID, connectionID)
 }
 
-func (a *API) Connections(ctx context.Context, userID string) (ConnectionList, error) {
-	connectionList, err := a.connections(ctx, userID)
+func (a *API) Connections(ctx context.Context, userID string) ([]Connection, error) {
+	connections, err := a.connections(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return connectionList, err
+		return connections, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return ConnectionList{}, err
+		return nil, err
 	}
 	return a.connections(ctx, userID)
 }
@@ -113,13 +113,13 @@ func (a *API) RefreshConnection(ctx context.Context, userID, connectionID string
 	return a.refreshConnection(ctx, userID, connectionID)
 }
 
-func (a *API) RefreshConnections(ctx context.Context, userID string) (ConnectionList, error) {
-	connectionList, err := a.refreshConnections(ctx, userID)
+func (a *API) RefreshConnections(ctx context.Context, userID string) ([]Connection, error) {
+	connections, err := a.refreshConnections(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return connectionList, err
+		return connections, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return ConnectionList{}, err
+		return nil, err
 	}
 	return a.refreshConnections(ctx, userID)
 }
@@ -152,19 +152,22 @@ func (a *API) connection(ctx context.Context, userID, connectionID string) (Conn
 	return connection, json.Unmarshal(data, &connection)
 }
 
-func (a *API) connections(ctx context.Context, userID string) (ConnectionList, error) {
+func (a *API) connections(ctx context.Context, userID string) ([]Connection, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "connections")
 	if err != nil {
-		return ConnectionList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return ConnectionList{}, err
+		return nil, err
 	}
 
 	var list ConnectionList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }
 
 func (a *API) refreshConnection(ctx context.Context, userID, connectionID string) (Connection, error) {
@@ -182,19 +185,22 @@ func (a *API) refreshConnection(ctx context.Context, userID, connectionID string
 	return connection, json.Unmarshal(data, &connection)
 }
 
-func (a *API) refreshConnections(ctx context.Context, userID string) (ConnectionList, error) {
+func (a *API) refreshConnections(ctx context.Context, userID string) ([]Connection, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "connections", "refresh")
 	if err != nil {
-		return ConnectionList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodPost, callURL, nil)
 	if err != nil {
-		return ConnectionList{}, err
+		return nil, err
 	}
 
 	var list ConnectionList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }
 
 func (a *API) deleteConnection(ctx context.Context, userID, connectionID string) error {

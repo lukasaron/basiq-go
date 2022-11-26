@@ -42,13 +42,13 @@ func (a *API) FloatAccount(ctx context.Context, floatAccountID string) (FloatAcc
 	return a.floatAccount(ctx, floatAccountID)
 }
 
-func (a *API) FloatAccounts(ctx context.Context) (FloatAccountList, error) {
-	floatAccountList, err := a.floatAccounts(ctx)
+func (a *API) FloatAccounts(ctx context.Context) ([]FloatAccount, error) {
+	floatAccounts, err := a.floatAccounts(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return floatAccountList, err
+		return floatAccounts, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return FloatAccountList{}, err
+		return nil, err
 	}
 	return a.floatAccounts(ctx)
 }
@@ -70,17 +70,20 @@ func (a *API) floatAccount(ctx context.Context, floatAccountID string) (FloatAcc
 	return floatAccount, json.Unmarshal(data, &floatAccount)
 }
 
-func (a *API) floatAccounts(ctx context.Context) (FloatAccountList, error) {
+func (a *API) floatAccounts(ctx context.Context) ([]FloatAccount, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "float-accounts")
 	if err != nil {
-		return FloatAccountList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return FloatAccountList{}, err
+		return nil, err
 	}
 
 	var list FloatAccountList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }

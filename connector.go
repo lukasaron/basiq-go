@@ -78,13 +78,13 @@ func (a *API) Connector(ctx context.Context, connectorID, method string) (Connec
 	return a.connector(ctx, connectorID, method)
 }
 
-func (a *API) Connectors(ctx context.Context) (ConnectorList, error) {
-	connectorList, err := a.connectors(ctx)
+func (a *API) Connectors(ctx context.Context) ([]Connector, error) {
+	connectors, err := a.connectors(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return connectorList, err
+		return connectors, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return ConnectorList{}, err
+		return nil, err
 	}
 	return a.connectors(ctx)
 }
@@ -106,17 +106,20 @@ func (a *API) connector(ctx context.Context, connectorID, method string) (Connec
 	return connector, json.Unmarshal(data, &connector)
 }
 
-func (a *API) connectors(ctx context.Context) (ConnectorList, error) {
+func (a *API) connectors(ctx context.Context) ([]Connector, error) {
 	callURL, err := url.JoinPath(baseURL, "connectors")
 	if err != nil {
-		return ConnectorList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return ConnectorList{}, err
+		return nil, err
 	}
 
 	var list ConnectorList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }

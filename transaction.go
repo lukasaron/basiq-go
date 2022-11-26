@@ -99,13 +99,13 @@ func (a *API) Transaction(ctx context.Context, userID, transactionID string) (Tr
 	return a.transaction(ctx, userID, transactionID)
 }
 
-func (a *API) Transactions(ctx context.Context, userID string) (TransactionList, error) {
-	transactionList, err := a.transactions(ctx, userID)
+func (a *API) Transactions(ctx context.Context, userID string) ([]Transaction, error) {
+	transactions, err := a.transactions(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return transactionList, err
+		return transactions, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return TransactionList{}, err
+		return nil, err
 	}
 	return a.transactions(ctx, userID)
 }
@@ -127,17 +127,27 @@ func (a *API) transaction(ctx context.Context, userID, transactionID string) (Tr
 	return transaction, json.Unmarshal(data, &transaction)
 }
 
-func (a *API) transactions(ctx context.Context, userID string) (TransactionList, error) {
+func (a *API) transactions(ctx context.Context, userID string) ([]Transaction, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "transactions")
 	if err != nil {
-		return TransactionList{}, err
+		return nil, err
 	}
 
-	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
-	if err != nil {
-		return TransactionList{}, err
+	var transactions []Transaction
+	for callURL != "" {
+		data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		var list TransactionList
+		if err = json.Unmarshal(data, &list); err != nil {
+			return nil, err
+		}
+		if len(list.Data) > 0 {
+			transactions = append(transactions, list.Data...)
+		}
+		callURL = list.Links.Next
 	}
 
-	var list TransactionList
-	return list, json.Unmarshal(data, &list)
+	return transactions, err
 }

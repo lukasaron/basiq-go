@@ -88,24 +88,24 @@ func (a *API) PayRequest(ctx context.Context, payRequestID string) (PayRequest, 
 	return a.payRequest(ctx, payRequestID)
 }
 
-func (a *API) PayRequests(ctx context.Context) (PayRequestList, error) {
-	payRequestList, err := a.payRequests(ctx)
+func (a *API) PayRequests(ctx context.Context) ([]PayRequest, error) {
+	payRequests, err := a.payRequests(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return payRequestList, err
+		return payRequests, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return PayRequestList{}, err
+		return nil, err
 	}
 	return a.payRequests(ctx)
 }
 
-func (a *API) CreatePayRequest(ctx context.Context, params PayRequestParams) (PayRequestJobList, error) {
-	payRequestJobList, err := a.createPayRequest(ctx, params)
+func (a *API) CreatePayRequest(ctx context.Context, params PayRequestParams) ([]PayRequestJob, error) {
+	payRequestJobs, err := a.createPayRequest(ctx, params)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return payRequestJobList, err
+		return payRequestJobs, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return PayRequestJobList{}, err
+		return nil, err
 	}
 	return a.createPayRequest(ctx, params)
 }
@@ -127,37 +127,50 @@ func (a *API) payRequest(ctx context.Context, payRequestID string) (PayRequest, 
 	return payRequest, json.Unmarshal(data, &payRequest)
 }
 
-func (a *API) payRequests(ctx context.Context) (PayRequestList, error) {
+func (a *API) payRequests(ctx context.Context) ([]PayRequest, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "payrequests")
 	if err != nil {
-		return PayRequestList{}, err
+		return nil, err
 	}
 
-	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
-	if err != nil {
-		return PayRequestList{}, err
+	var requests []PayRequest
+	for callURL != "" {
+		data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		var list PayRequestList
+		if err = json.Unmarshal(data, &list); err != nil {
+			return nil, err
+		}
+		if len(list.Data) > 0 {
+			requests = append(requests, list.Data...)
+		}
+		callURL = list.Links.Next
 	}
 
-	var list PayRequestList
-	return list, json.Unmarshal(data, &list)
+	return requests, err
 }
 
-func (a *API) createPayRequest(ctx context.Context, params PayRequestParams) (PayRequestJobList, error) {
+func (a *API) createPayRequest(ctx context.Context, params PayRequestParams) ([]PayRequestJob, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "payrequests")
 	if err != nil {
-		return PayRequestJobList{}, err
+		return nil, err
 	}
 
 	payload, err := json.Marshal(params)
 	if err != nil {
-		return PayRequestJobList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
-		return PayRequestJobList{}, err
+		return nil, err
 	}
 
 	var list PayRequestJobList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Jobs, nil
 }

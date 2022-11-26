@@ -56,13 +56,13 @@ func (a *API) Account(ctx context.Context, userID, accountID string) (Account, e
 	return a.account(ctx, userID, accountID)
 }
 
-func (a *API) Accounts(ctx context.Context, userID string) (AccountList, error) {
-	accountList, err := a.accounts(ctx, userID)
+func (a *API) Accounts(ctx context.Context, userID string) ([]Account, error) {
+	accounts, err := a.accounts(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return accountList, err
+		return accounts, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return AccountList{}, err
+		return nil, err
 	}
 	return a.accounts(ctx, userID)
 }
@@ -84,17 +84,20 @@ func (a *API) account(ctx context.Context, userID, accountID string) (Account, e
 	return account, json.Unmarshal(data, &account)
 }
 
-func (a *API) accounts(ctx context.Context, userID string) (AccountList, error) {
+func (a *API) accounts(ctx context.Context, userID string) ([]Account, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "accounts")
 	if err != nil {
-		return AccountList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return AccountList{}, err
+		return nil, err
 	}
 
 	var list AccountList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }

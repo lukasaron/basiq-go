@@ -60,7 +60,7 @@ type Payout struct {
 }
 
 type PayoutJobList struct {
-	Jobs []PayRequestJob `json:"jobs"`
+	Jobs []PayoutJob `json:"jobs"`
 }
 
 type PayoutJob struct {
@@ -85,24 +85,24 @@ func (a *API) Payout(ctx context.Context, payoutID string) (Payout, error) {
 	return a.payout(ctx, payoutID)
 }
 
-func (a *API) Payouts(ctx context.Context) (PayoutList, error) {
-	payoutList, err := a.payouts(ctx)
+func (a *API) Payouts(ctx context.Context) ([]Payout, error) {
+	payouts, err := a.payouts(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return payoutList, err
+		return payouts, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return PayoutList{}, err
+		return nil, err
 	}
 	return a.payouts(ctx)
 }
 
-func (a *API) CreatePayout(ctx context.Context, params PayoutParams) (PayoutJobList, error) {
-	payoutJobList, err := a.createPayout(ctx, params)
+func (a *API) CreatePayout(ctx context.Context, params PayoutParams) ([]PayoutJob, error) {
+	payoutJobs, err := a.createPayout(ctx, params)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return payoutJobList, err
+		return payoutJobs, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return PayoutJobList{}, err
+		return nil, err
 	}
 	return a.createPayout(ctx, params)
 }
@@ -124,37 +124,50 @@ func (a *API) payout(ctx context.Context, payoutID string) (Payout, error) {
 	return payout, json.Unmarshal(data, &payout)
 }
 
-func (a *API) payouts(ctx context.Context) (PayoutList, error) {
+func (a *API) payouts(ctx context.Context) ([]Payout, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "payouts")
 	if err != nil {
-		return PayoutList{}, err
+		return nil, err
 	}
 
-	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
-	if err != nil {
-		return PayoutList{}, err
+	var payouts []Payout
+	for callURL != "" {
+		data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		var list PayoutList
+		if err = json.Unmarshal(data, &list); err != nil {
+			return nil, err
+		}
+		if len(list.Data) > 0 {
+			payouts = append(payouts, list.Data...)
+		}
+		callURL = list.Links.Next
 	}
 
-	var list PayoutList
-	return list, json.Unmarshal(data, &list)
+	return payouts, err
 }
 
-func (a *API) createPayout(ctx context.Context, params PayoutParams) (PayoutJobList, error) {
+func (a *API) createPayout(ctx context.Context, params PayoutParams) ([]PayoutJob, error) {
 	callURL, err := url.JoinPath(baseURL, "payments", "payouts")
 	if err != nil {
-		return PayoutJobList{}, err
+		return nil, err
 	}
 
 	payload, err := json.Marshal(params)
 	if err != nil {
-		return PayoutJobList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodPost, callURL, bytes.NewReader(payload))
 	if err != nil {
-		return PayoutJobList{}, err
+		return nil, err
 	}
 
 	var list PayoutJobList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Jobs, nil
 }

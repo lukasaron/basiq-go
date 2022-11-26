@@ -75,13 +75,13 @@ func (a *API) Identity(ctx context.Context, userID, identityID string) (Identity
 	return a.identity(ctx, userID, identityID)
 }
 
-func (a *API) Identities(ctx context.Context, userID string) (IdentityList, error) {
-	identityList, err := a.identities(ctx, userID)
+func (a *API) Identities(ctx context.Context, userID string) ([]Identity, error) {
+	identities, err := a.identities(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return identityList, err
+		return identities, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return IdentityList{}, err
+		return nil, err
 	}
 	return a.identities(ctx, userID)
 }
@@ -103,17 +103,20 @@ func (a *API) identity(ctx context.Context, userID, identityID string) (Identity
 	return identity, json.Unmarshal(data, &identity)
 }
 
-func (a *API) identities(ctx context.Context, userID string) (IdentityList, error) {
+func (a *API) identities(ctx context.Context, userID string) ([]Identity, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "identities")
 	if err != nil {
-		return IdentityList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return IdentityList{}, err
+		return nil, err
 	}
 
 	var list IdentityList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }

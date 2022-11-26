@@ -32,30 +32,33 @@ type AffordabilitySummary struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (a *API) AffordabilitySummaries(ctx context.Context, userID string) (AffordabilitySummaryList, error) {
-	affordabilitySummaryList, err := a.affordabilitySummaries(ctx, userID)
+func (a *API) AffordabilitySummaries(ctx context.Context, userID string) ([]AffordabilitySummary, error) {
+	affordabilitySummaries, err := a.affordabilitySummaries(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return affordabilitySummaryList, err
+		return affordabilitySummaries, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return AffordabilitySummaryList{}, err
+		return nil, err
 	}
 	return a.affordabilitySummaries(ctx, userID)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (a *API) affordabilitySummaries(ctx context.Context, userID string) (AffordabilitySummaryList, error) {
+func (a *API) affordabilitySummaries(ctx context.Context, userID string) ([]AffordabilitySummary, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "affordability")
 	if err != nil {
-		return AffordabilitySummaryList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return AffordabilitySummaryList{}, err
+		return nil, err
 	}
 
 	var list AffordabilitySummaryList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }

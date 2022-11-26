@@ -39,30 +39,39 @@ type AffordabilityTransaction struct {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (a *API) AffordabilityTransactions(ctx context.Context, userID, snapshotID string) (AffordabilityTransactionList, error) {
-	affordabilityTransactionList, err := a.affordabilityTransactions(ctx, userID, snapshotID)
+func (a *API) AffordabilityTransactions(ctx context.Context, userID, snapshotID string) ([]AffordabilityTransaction, error) {
+	affordabilityTransactions, err := a.affordabilityTransactions(ctx, userID, snapshotID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return affordabilityTransactionList, err
+		return affordabilityTransactions, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return AffordabilityTransactionList{}, err
+		return nil, err
 	}
 	return a.affordabilityTransactions(ctx, userID, snapshotID)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-func (a *API) affordabilityTransactions(ctx context.Context, userID, snapshotID string) (AffordabilityTransactionList, error) {
+func (a *API) affordabilityTransactions(ctx context.Context, userID, snapshotID string) ([]AffordabilityTransaction, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "affordability", snapshotID, "transactions")
 	if err != nil {
-		return AffordabilityTransactionList{}, err
+		return nil, err
 	}
 
-	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
-	if err != nil {
-		return AffordabilityTransactionList{}, err
+	var transactions []AffordabilityTransaction
+	for callURL != "" {
+		data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		var list AffordabilityTransactionList
+		if err = json.Unmarshal(data, &list); err != nil {
+			return nil, err
+		}
+		if len(list.Data) > 0 {
+			transactions = append(transactions, list.Data...)
+		}
+		callURL = list.Links.Next
 	}
-
-	var list AffordabilityTransactionList
-	return list, json.Unmarshal(data, &list)
+	return transactions, nil
 }

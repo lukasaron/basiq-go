@@ -39,30 +39,33 @@ type Event struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (a *API) Events(ctx context.Context) (EventList, error) {
-	eventList, err := a.events(ctx)
+func (a *API) Events(ctx context.Context) ([]Event, error) {
+	events, err := a.events(ctx)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return eventList, err
+		return events, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return EventList{}, err
+		return nil, err
 	}
 	return a.events(ctx)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (a *API) events(ctx context.Context) (EventList, error) {
+func (a *API) events(ctx context.Context) ([]Event, error) {
 	callURL, err := url.JoinPath(baseURL, "events")
 	if err != nil {
-		return EventList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return EventList{}, err
+		return nil, err
 	}
 
 	var list EventList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }

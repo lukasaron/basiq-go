@@ -48,30 +48,33 @@ type UserJob struct {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (a *API) UserJobs(ctx context.Context, userID string) (UserJobList, error) {
-	jobList, err := a.userJobs(ctx, userID)
+func (a *API) UserJobs(ctx context.Context, userID string) ([]UserJob, error) {
+	userJobs, err := a.userJobs(ctx, userID)
 	if err != nil && !IsUnauthorizedErr(err) {
-		return jobList, err
+		return userJobs, err
 	}
 	if err = a.Authenticate(ctx); err != nil {
-		return UserJobList{}, err
+		return nil, err
 	}
 	return a.userJobs(ctx, userID)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-func (a *API) userJobs(ctx context.Context, userID string) (UserJobList, error) {
+func (a *API) userJobs(ctx context.Context, userID string) ([]UserJob, error) {
 	callURL, err := url.JoinPath(baseURL, "users", userID, "jobs")
 	if err != nil {
-		return UserJobList{}, err
+		return nil, err
 	}
 
 	data, err := a.makeCall(ctx, http.MethodGet, callURL, nil)
 	if err != nil {
-		return UserJobList{}, err
+		return nil, err
 	}
 
 	var list UserJobList
-	return list, json.Unmarshal(data, &list)
+	if err = json.Unmarshal(data, &list); err != nil {
+		return nil, err
+	}
+	return list.Data, nil
 }
