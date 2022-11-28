@@ -50,9 +50,9 @@ type Payout struct {
 		PayeeBankBranchCode string `json:"payeeBankBranchCode"`
 		PayeeAccountNumber  string `json:"payeeAccountNumber"`
 	} `json:"payee"`
-	Description string  `json:"description"`
-	Amount      float64 `json:"amount"`
-	Currency    string  `json:"currency"`
+	Description string `json:"description"`
+	Amount      string `json:"amount"`
+	Currency    string `json:"currency"`
 	Links       struct {
 		Self string `json:"self"`
 		Job  string `json:"job"`

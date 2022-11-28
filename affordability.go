@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -64,13 +65,13 @@ type Affordability struct {
 			Currency        string `json:"currency"`
 			Institution     string `json:"institution"`
 			Previous6Months struct {
-				CashAdvances float64 `json:"cashAdvances"`
+				CashAdvances string `json:"cashAdvances"`
 			} `json:"previous6Months"`
 			PreviousMonth struct {
-				MaxBalance   float64 `json:"maxBalance"`
-				MinBalance   float64 `json:"minBalance"`
-				TotalCredits string  `json:"totalCredits"`
-				TotalDebits  float64 `json:"totalDebits"`
+				MaxBalance   string `json:"maxBalance"`
+				MinBalance   string `json:"minBalance"`
+				TotalCredits string `json:"totalCredits"`
+				TotalDebits  string `json:"totalDebits"`
 			} `json:"previousMonth"`
 		} `json:"credit"`
 		Loan []struct {
@@ -92,21 +93,21 @@ type Affordability struct {
 				Arrears string `json:"arrears"`
 			} `json:"previous6Months"`
 			PreviousMonth struct {
-				TotalCredits         string  `json:"totalCredits"`
-				TotalDebits          float64 `json:"totalDebits"`
-				TotalInterestCharged float64 `json:"totalInterestCharged"`
-				TotalRepayments      string  `json:"totalRepayments"`
+				TotalCredits         string `json:"totalCredits"`
+				TotalDebits          string `json:"totalDebits"`
+				TotalInterestCharged string `json:"totalInterestCharged"`
+				TotalRepayments      string `json:"totalRepayments"`
 			} `json:"previousMonth"`
 		} `json:"loan"`
 	} `json:"liabilities"`
 	Summary struct {
-		Assets                      string  `json:"assets"`
-		CreditLimit                 string  `json:"creditLimit"`
-		Expenses                    string  `json:"expenses"`
-		Liabilities                 string  `json:"liabilities"`
-		LoanRepaymentMonthly        string  `json:"loanRepaymentMonthly"`
-		NetPosition                 float64 `json:"netPosition"`
-		PotentialLiabilitiesMonthly int     `json:"potentialLiabilitiesMonthly"`
+		Assets                      string `json:"assets"`
+		CreditLimit                 string `json:"creditLimit"`
+		Expenses                    string `json:"expenses"`
+		Liabilities                 string `json:"liabilities"`
+		LoanRepaymentMonthly        string `json:"loanRepaymentMonthly"`
+		NetPosition                 string `json:"netPosition"`
+		PotentialLiabilitiesMonthly string `json:"potentialLiabilitiesMonthly"`
 		RegularIncome               struct {
 			Previous3Months struct {
 				AvgMonthly string `json:"avgMonthly"`
@@ -178,7 +179,7 @@ func (a *API) createAffordability(ctx context.Context, userID string, params Aff
 	if err != nil {
 		return Affordability{}, err
 	}
-
+	fmt.Println(string(data))
 	var affordability Affordability
 	return affordability, json.Unmarshal(data, &affordability)
 }
